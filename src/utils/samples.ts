@@ -55,6 +55,50 @@ export const SAMPLE_WORKFLOW_TEXT = `1. Customer submits a support ticket
 5. Send the customer an update
 6. Resolve and close the ticket`;
 
+export const SAMPLE_AGENT_WORKFLOW = `User Idea/Input
+       |
+       v
+Research Agent
+Market & Competitor Analysis
+       |
+       v
+Planning Agent
+Requirements & Features
+       |
+       v
+Architecture Agent
+System Design`;
+
+export const SAMPLE_ASCII_FLOWCHART = `+-----------------------+
+|      User Input       |
++-----------------------+
+           |
+           v
++-----------------------+
+|    Data Processing    |
++-----------------------+
+           |
+           v
+      +---------+
+      | Valid?  |
+      +---------+
+        /     \\
+      Yes      No
+       |        |
+       v        v
+   Continue   Retry
+       |
+       v
+      End`;
+
+export const SAMPLE_LOOP_WORKFLOW = `Start
+Validate the uploaded file
+If the file is valid, process the data
+Otherwise retry
+Retry goes back to Validate the uploaded file
+Generate a report
+End`;
+
 export const SAMPLE_PROMPTS = [
   'A user signs in, the system validates their credentials, and if valid they see the dashboard; otherwise they receive an error message.',
   'An online order is validated, paid, packed, invoiced, shipped, and the customer receives a confirmation email.',

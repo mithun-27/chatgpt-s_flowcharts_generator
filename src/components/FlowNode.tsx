@@ -48,7 +48,14 @@ function FlowNodeView({ id, data, selected, isConnectable }: NodeProps<FlowNode>
       endNodeEdit();
       return;
     }
-    const next = draft.replace(/\s+/g, ' ').trim() || data.label;
+    const next =
+      draft
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .map((line) => line.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .join('\n') || data.label;
     setDraft(next);
     setEditing(false);
     updateNodeLabel(id, next);
@@ -81,7 +88,7 @@ function FlowNodeView({ id, data, selected, isConnectable }: NodeProps<FlowNode>
       aria-label="Edit node label"
     />
   ) : (
-    <span className="line-clamp-5 max-w-full break-words text-center text-[13px] font-semibold leading-snug">
+    <span className="line-clamp-5 max-w-full whitespace-pre-line break-words text-center text-[13px] font-semibold leading-snug">
       {data.label}
     </span>
   );

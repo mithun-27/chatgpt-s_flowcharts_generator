@@ -1,20 +1,29 @@
 import { useMemo, useState } from 'react';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowRight,
   Code2,
   FileText,
   FlaskConical,
+  LayoutTemplate,
   Loader2,
   Play,
   Sparkles,
   Wand2,
 } from 'lucide-react';
-import type { FlowDiagram } from '../../types/diagram';
+import type { FlowDiagram, LayoutDirection } from '../../types/diagram';
 import type { HfSettings } from '../../types/hf';
 import { isMermaid, parseMermaid } from '../../utils/mermaid';
 import { normalizeAiDiagram } from '../../utils/diagram';
 import { shortError } from '../../utils/json';
-import { SAMPLE_WORKFLOW_TEXT } from '../../utils/samples';
+import {
+  SAMPLE_AGENT_WORKFLOW,
+  SAMPLE_ASCII_FLOWCHART,
+  SAMPLE_LOOP_WORKFLOW,
+  SAMPLE_WORKFLOW_TEXT,
+} from '../../utils/samples';
+import { looksLikeAsciiFlowchart } from '../../utils/asciiFlow';
 import { textToDiagram } from '../../utils/textToFlow';
 import { structureWorkflowText } from '../../services/aiText';
 import type { ToastKind } from '../Toast';
@@ -37,21 +46,40 @@ export default function PasteTab({
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [direction, setDirection] = useState<LayoutDirection>('TB');
+  const [useAi, setUseAi] = useState(false);
+
   const mermaid = useMemo(() => isMermaid(text), [text]);
+  const ascii = useMemo(() => !mermaid && looksLikeAsciiFlowchart(text), [mermaid, text]);
+
+  const loadLocal = () => {
+    const diagram = textToDiagram(text, { direction });
+    const title = diagram.title ? `“${diagram.title}” · ` : '';
+    onLoadDiagram(
+      diagram,
+      `${title}${ascii ? 'Rebuilt ASCII diagram' : 'Structured workflow'} into ${diagram.nodes.length} nodes and ${diagram.edges.length} connections.`,
+    );
+  };
 
   const runLocal = () => {
     setError('');
     try {
-      if (mermaid) {
-        const diagram = parseMermaid(text);
-        onLoadDiagram(diagram, `Converted Mermaid into ${diagram.nodes.length} editable nodes.`);
-      } else {
-        const diagram = textToDiagram(text);
-        onLoadDiagram(
-          diagram,
-          `Created ${diagram.nodes.length} nodes with the local workflow parser.`,
-        );
-      }
+      loadLocal();
+    } catch (localError) {
+      const message = shortError(localError);
+      setError(message);
+      onToast(message, 'error');
+    }
+  };
+
+  const runMermaid = () => {
+    setError('');
+    try {
+      const diagram = parseMermaid(text);
+      onLoadDiagram(
+        diagram,
+        `Converted Mermaid into ${diagram.nodes.length} editable nodes.`,
+      );
     } catch (localError) {
       const message = shortError(localError);
       setError(message);
@@ -61,7 +89,7 @@ export default function PasteTab({
 
   const runAi = async () => {
     if (!settings.token) {
-      onToast('Add a Hugging Face token to use AI structuring, or use the simple parser.', 'info');
+      onToast('Add a Hugging Face token to use AI structuring, or use the local parser.', 'info');
       onOpenSettings();
       return;
     }
@@ -69,16 +97,21 @@ export default function PasteTab({
     setError('');
     setBusy(true);
     try {
-      const result = await structureWorkflowText(settings, text);
-      const { diagram, warnings } = normalizeAiDiagram(result);
+      const result = await structureWorkflowText(settings, text, undefined, direction);
+      const { diagram, warnings } = normalizeAiDiagram(result, direction);
       onLoadDiagram(
         diagram,
         warnings[0] ?? `AI structured the workflow into ${diagram.nodes.length} nodes.`,
       );
     } catch (aiError) {
       const message = shortError(aiError);
-      setError(message);
-      onToast(message, 'error');
+      try {
+        loadLocal();
+        onToast('AI was unavailable, so the local parser built the flowchart.', 'info');
+      } catch {
+        setError(message);
+        onToast(message, 'error');
+      }
     } finally {
       setBusy(false);
     }
@@ -86,39 +119,39 @@ export default function PasteTab({
 
   const primary = () => {
     if (mermaid) {
-      runLocal();
-    } else if (settings.token) {
+      runMermaid();
+    } else if (useAi && settings.token) {
       void runAi();
     } else {
       runLocal();
     }
   };
 
+  const loadSample = (sample: string) => {
+    setText(sample);
+    setError('');
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <FileText size={14} />
-          <span>Plain workflow text or Mermaid syntax</span>
+          <span>Paste text, an ASCII flowchart, or Mermaid</span>
           {mermaid && (
             <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
               <Code2 size={10} />
               Mermaid detected
             </span>
           )}
+          {ascii && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+              <LayoutTemplate size={10} />
+              ASCII flowchart detected
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setText(SAMPLE_WORKFLOW_TEXT);
-              setError('');
-            }}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400"
-          >
-            <FlaskConical size={12} />
-            Load sample
-          </button>
+        <div className="flex items-center gap-2">
           {text && (
             <button
               type="button"
@@ -134,24 +167,116 @@ export default function PasteTab({
         </div>
       </div>
 
-      <textarea
-        value={text}
-        onChange={(event) => {
-          setText(event.target.value);
-          setError('');
-        }}
-        rows={8}
-        spellCheck={false}
-        placeholder={`Paste a workflow...\n\n1. Customer submits an order\n2. Validate payment\n3. If approved, pack and ship\n4. Otherwise notify the customer\n\nOr paste Mermaid:\nflowchart TD\n  A([Start]) --> B[Validate order]\n  B --> C{Approved?}\n  C -->|Yes| D[Ship order]\n  C -->|No| E[Notify customer]`}
-        className="w-full resize-y rounded-xl border border-slate-300 bg-white p-3 font-mono text-[12px] leading-relaxed text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
-      />
+      <div>
+        <label
+          htmlFor="workflow-input"
+          className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500"
+        >
+          Workflow source
+        </label>
+        <textarea
+          id="workflow-input"
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+            setError('');
+          }}
+          rows={11}
+          spellCheck={false}
+          placeholder="Paste your ChatGPT-generated workflow or flowchart here..."
+          className="w-full resize-y rounded-xl border border-slate-300 bg-white p-3 font-mono text-[12px] leading-relaxed text-slate-800 shadow-sm placeholder:font-sans placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-[11px]">
+        <span className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500">
+          <FlaskConical size={11} />
+          Try a sample:
+        </span>
+        <button
+          type="button"
+          onClick={() => loadSample(SAMPLE_AGENT_WORKFLOW)}
+          className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
+        >
+          AI agent workflow
+        </button>
+        <button
+          type="button"
+          onClick={() => loadSample(SAMPLE_ASCII_FLOWCHART)}
+          className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
+        >
+          Decision flowchart
+        </button>
+        <button
+          type="button"
+          onClick={() => loadSample(SAMPLE_LOOP_WORKFLOW)}
+          className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
+        >
+          Loop workflow
+        </button>
+        <button
+          type="button"
+          onClick={() => loadSample(SAMPLE_WORKFLOW_TEXT)}
+          className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
+        >
+          Numbered steps
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div
+          className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-950/60"
+          role="group"
+          aria-label="Flowchart direction"
+        >
+          <button
+            type="button"
+            onClick={() => setDirection('TB')}
+            aria-pressed={direction === 'TB'}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
+              direction === 'TB'
+                ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-300'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            <ArrowDown size={12} />
+            Vertical
+          </button>
+          <button
+            type="button"
+            onClick={() => setDirection('LR')}
+            aria-pressed={direction === 'LR'}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
+              direction === 'LR'
+                ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-300'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            <ArrowRight size={12} />
+            Horizontal
+          </button>
+        </div>
+
+        {settings.token && (
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <input
+              type="checkbox"
+              checked={useAi}
+              onChange={(event) => setUseAi(event.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            Use AI for ambiguous text
+          </label>
+        )}
+      </div>
 
       {!settings.token && !mermaid && (
         <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
           <Wand2 size={14} className="mt-0.5 shrink-0 text-blue-500" />
           <p>
-            Demo mode uses a deterministic workflow parser. Add a token to let AI
-            handle messy or ambiguous text.
+            The local parser understands ASCII boxes, arrows, numbered steps,
+            YES/NO branches, and loops — no account or API key required. Add a
+            token only when the wording is too ambiguous for deterministic rules.
           </p>
         </div>
       )}
@@ -170,25 +295,8 @@ export default function PasteTab({
           ) : (
             <Sparkles size={15} />
           )}
-          {busy
-            ? 'Structuring workflow…'
-            : mermaid
-              ? 'Convert Mermaid'
-              : settings.token
-                ? 'Structure with AI'
-                : 'Create with simple parser'}
+          {busy ? 'Generating…' : 'Generate Flowchart'}
         </button>
-
-        {!mermaid && settings.token && (
-          <button
-            type="button"
-            onClick={runLocal}
-            disabled={!text.trim() || busy}
-            className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Use simple parser
-          </button>
-        )}
 
         {mermaid && (
           <button
@@ -199,6 +307,22 @@ export default function PasteTab({
             Preview Mermaid
           </button>
         )}
+
+        {!mermaid && settings.token && !useAi && (
+          <button
+            type="button"
+            onClick={() => void runAi()}
+            disabled={!text.trim() || busy}
+            className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Refine with AI
+          </button>
+        )}
+
+        <span className="text-[11px] text-slate-400 dark:text-slate-500">
+          Layout: {direction === 'TB' ? 'top to bottom' : 'left to right'} · editable after
+          generation
+        </span>
       </div>
 
       {error && (

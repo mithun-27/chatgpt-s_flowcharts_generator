@@ -24,16 +24,16 @@ const TABS: Array<{
   icon: typeof UploadCloud;
 }> = [
   {
+    id: 'paste',
+    label: 'Paste Workflow',
+    hint: 'Text, ASCII, or Mermaid → editable flowchart',
+    icon: ClipboardPaste,
+  },
+  {
     id: 'upload',
     label: 'Upload Image',
     hint: 'Screenshot → editable flow',
     icon: UploadCloud,
-  },
-  {
-    id: 'paste',
-    label: 'Paste Workflow',
-    hint: 'Text or Mermaid',
-    icon: ClipboardPaste,
   },
   {
     id: 'generate',
@@ -50,7 +50,7 @@ export default function InputPanel({
   onOpenSettings,
   onPreviewMermaid,
 }: InputPanelProps) {
-  const [mode, setMode] = useState<InputMode>('upload');
+  const [mode, setMode] = useState<InputMode>('paste');
   const active = TABS.find((tab) => tab.id === mode) ?? TABS[0];
 
   return (

@@ -10,6 +10,7 @@ Return ONLY a valid JSON diagram. No markdown fences, no explanation.
 
 Schema:
 {
+  "title": "Optional diagram title",
   "direction": "TB",
   "nodes": [
     { "id": "n1", "label": "Start", "shape": "startEnd", "color": "green" }
@@ -29,6 +30,37 @@ Rules:
 - Connect every node into a coherent flow.
 - direction should be "TB" (top to bottom) unless the user asks for horizontal.
 - Do not include coordinates or styling.`;
+
+const STRUCTURE_SYSTEM_PROMPT = `You are an expert flowchart compiler. Convert pasted workflows, ASCII flowcharts, numbered steps, and ChatGPT plans into a clean, professional diagram.
+Return ONLY valid JSON. No markdown fences, no commentary.
+
+Schema:
+{
+  "title": "Optional title from the source",
+  "direction": "TB",
+  "nodes": [
+    { "id": "n1", "label": "User Input", "shape": "inputOutput", "color": "blue" },
+    { "id": "n2", "label": "Research Agent\\nMarket & Competitor Analysis", "shape": "process" }
+  ],
+  "edges": [
+    { "source": "n1", "target": "n2", "label": "" }
+  ]
+}
+
+Allowed shapes: startEnd, process, decision, inputOutput, document, connector.
+Allowed colors: slate, blue, green, amber, rose, violet.
+
+Compilation rules:
+- Preserve the original meaning and ordering. Do not invent unrelated steps.
+- Group a name line with its description into ONE node, using "\\n" inside the label, when they clearly describe the same step (for example "Research Agent" + "Market & Competitor Analysis").
+- Do NOT treat every source line as a separate node. Do NOT create a node for decorative ASCII borders, arrow characters, or rows that only contain "Yes"/"No" branch labels.
+- Use decision diamonds for questions and gates. Put "Yes" and "No" on the correct outgoing edges.
+- Preserve branches, merges, loops, and feedback connections from the source.
+- Use inputOutput for inputs/outputs, startEnd for explicit start/end steps, and document for reports/records.
+- Every edge must reference an existing node id. Never emit self-loops.
+- Keep labels concise (under 120 characters). At most 40 nodes.
+- Do not include coordinates; layout is handled elsewhere.
+- Return an empty edges array only when there is genuinely one node.`;
 
 function diagramForPrompt(diagram: FlowDiagram): string {
   const clean = cleanDiagram(diagram);
@@ -79,6 +111,7 @@ export async function structureWorkflowText(
   settings: HfSettings,
   workflowText: string,
   signal?: AbortSignal,
+  direction: 'TB' | 'LR' = 'TB',
 ): Promise<AiDiagram> {
   const response = await chatCompletion({
     token: settings.token,
@@ -87,10 +120,13 @@ export async function structureWorkflowText(
     maxTokens: 2800,
     signal,
     messages: [
-      { role: 'system', content: JSON_SYSTEM_PROMPT },
+      { role: 'system', content: STRUCTURE_SYSTEM_PROMPT },
       {
         role: 'user',
-        content: `Turn this pasted workflow into a clean flowchart. Keep all meaningful steps, split branches where appropriate, and do not invent unrelated steps.\n\nWORKFLOW:\n${workflowText}`,
+        content: `Compile this pasted workflow into a flowchart. Keep all meaningful steps, group name/description pairs, preserve YES/NO branches and loops, and do not invent unrelated steps. Use direction "${direction}".
+
+WORKFLOW:
+${workflowText}`,
       },
     ],
   });

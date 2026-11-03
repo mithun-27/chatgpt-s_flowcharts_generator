@@ -23,6 +23,8 @@ export type FlowEdge = Edge;
 
 export interface FlowDiagram {
   version: 1;
+  /** Optional title extracted from the pasted workflow. */
+  title?: string;
   direction: LayoutDirection;
   nodes: FlowNode[];
   edges: FlowEdge[];
@@ -43,6 +45,7 @@ export interface AiEdge {
 }
 
 export interface AiDiagram {
+  title?: string;
   direction?: LayoutDirection;
   nodes: AiNode[];
   edges?: AiEdge[];

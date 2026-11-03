@@ -39,9 +39,13 @@ export function uid(prefix: 'n' | 'e' = 'n'): string {
 export function cleanLabel(value: unknown, fallback = 'Untitled step'): string {
   if (typeof value !== 'string') return fallback;
   const cleaned = value
-    .replace(/\\n/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .join('\n')
     .slice(0, 180);
   return cleaned || fallback;
 }
@@ -166,8 +170,16 @@ export function normalizeAiDiagram(
   });
 
   const direction: LayoutDirection = input.direction === 'LR' ? 'LR' : fallbackDirection;
+  const title =
+    typeof input.title === 'string' ? cleanLabel(input.title, '').replace(/\n+/g, ' ') : '';
   const diagram = layoutDiagram(
-    { version: 1, direction, nodes, edges },
+    {
+      version: 1,
+      ...(title ? { title } : {}),
+      direction,
+      nodes,
+      edges,
+    },
     direction,
   );
 
@@ -177,6 +189,7 @@ export function normalizeAiDiagram(
 export function cleanDiagram(diagram: FlowDiagram): FlowDiagram {
   return {
     version: 1,
+    ...(diagram.title ? { title: diagram.title } : {}),
     direction: diagram.direction,
     nodes: diagram.nodes.map((node) => ({
       id: node.id,

@@ -309,6 +309,11 @@ function EditorShellInner({
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
           <div className="flex items-center gap-3">
+            {diagram.title && (
+              <span className="max-w-[16rem] truncate font-semibold text-slate-700 dark:text-slate-200" title={diagram.title}>
+                {diagram.title}
+              </span>
+            )}
             <span>
               <strong className="font-semibold text-slate-700 dark:text-slate-200">
                 {diagram.nodes.length}
