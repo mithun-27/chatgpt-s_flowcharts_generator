@@ -2,7 +2,7 @@
 title: "ChatGPT's Flowcharts Generator"
 emoji: "🧭"
 colorFrom: "blue"
-colorTo: "violet"
+colorTo: "purple"
 sdk: static
 pinned: false
 short_description: "Turn screenshots, text, or Mermaid into editable flowcharts."
