@@ -1,19 +1,3 @@
----
-title: "ChatGPT's Flowcharts Generator"
-emoji: "🧭"
-colorFrom: "blue"
-colorTo: "purple"
-sdk: static
-pinned: false
-short_description: "Turn screenshots, text, or Mermaid into editable flowcharts."
----
-
-<p align="center">
-  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator"><img src="https://img.shields.io/github/repo-size/mithun-27/chatgpt-s_flowcharts_generator?color=blue&style=flat-square" alt="Repo size"></a>
-  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator/commits/main"><img src="https://img.shields.io/github/last-commit/mithun-27/chatgpt-s_flowcharts_generator?color=violet&style=flat-square" alt="Last commit"></a>
-  <a href="https://mithun-2714-chatgpt-flowcharts-generator.static.hf.space/"><img src="https://img.shields.io/badge/live%20demo-huggingface%20spaces-blueviolet?style=flat-square" alt="Live demo"></a>
-  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mithun-27/chatgpt-s_flowcharts_generator?color=green&style=flat-square" alt="License"></a>
-</p>
 
 # 🧭 ChatGPT's Flowcharts Generator
 
