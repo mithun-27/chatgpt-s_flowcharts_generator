@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ArrowRight, GitFork, Heart, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { FlowDiagram } from './types/diagram';
 import { DEFAULT_HF_SETTINGS, type HfSettings } from './types/hf';
 import { createInitialDiagram } from './utils/samples';
@@ -13,7 +13,6 @@ import MermaidDialog from './components/MermaidDialog';
 import Toast, { type ToastKind, type ToastMessage } from './components/Toast';
 
 const INITIAL_DIAGRAM = createInitialDiagram();
-const GITHUB_URL = 'https://github.com/mithun-27/chatgpt-s_flowcharts_generator';
 
 export default function App() {
   const [dark, setDark] = useState(() =>
@@ -129,28 +128,6 @@ export default function App() {
           fitRequest={fitRequest}
         />
 
-        <footer className="flex flex-col items-center justify-between gap-2 pb-4 pt-1 text-[11px] text-slate-400 sm:flex-row dark:text-slate-500">
-          <p className="inline-flex items-center gap-1.5">
-            Built with React, React Flow, ELK, and Mermaid
-            <Sparkles size={11} className="text-violet-400" />
-            Local OCR · optional Hugging Face AI
-          </p>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1">
-              Student portfolio project
-              <Heart size={10} className="text-rose-400" />
-            </span>
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300"
-            >
-              <GitFork size={11} />
-              Source
-            </a>
-          </div>
-        </footer>
       </main>
 
       <TokenDialog
