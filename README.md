@@ -8,161 +8,223 @@ pinned: false
 short_description: "Turn screenshots, text, or Mermaid into editable flowcharts."
 ---
 
-# ChatGPT's Flowcharts Generator
+<p align="center">
+  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator"><img src="https://img.shields.io/github/repo-size/mithun-27/chatgpt-s_flowcharts_generator?color=blue&style=flat-square" alt="Repo size"></a>
+  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator/commits/main"><img src="https://img.shields.io/github/last-commit/mithun-27/chatgpt-s_flowcharts_generator?color=violet&style=flat-square" alt="Last commit"></a>
+  <a href="https://mithun-2714-chatgpt-flowcharts-generator.static.hf.space/"><img src="https://img.shields.io/badge/live%20demo-huggingface%20spaces-blueviolet?style=flat-square" alt="Live demo"></a>
+  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mithun-27/chatgpt-s_flowcharts_generator?color=green&style=flat-square" alt="License"></a>
+</p>
 
-A browser-only flowchart workspace for students and makers. Turn a screenshot,
-a rough workflow description, ChatGPT answer, ASCII diagram, Mermaid code, or
-technical documentation into a clean, editable diagram, then export it as PNG,
-SVG, PDF, Mermaid, or JSON.
+# 🧭 ChatGPT's Flowcharts Generator
 
-The app is a **static React build with no backend**. Demo mode works offline
-once the page is loaded and needs no account, API key, database, or paid
-hardware. A hybrid intelligence layer classifies the input, extracts intent and
-structure, validates the graph, repairs safe structural gaps, and lays it out
-with ELK. A Hugging Face model (or any OpenAI-compatible endpoint) is optional
-and adds deeper interpretation for ambiguous wording.
+> A browser-only flowchart workspace. Turn a screenshot, text, ChatGPT answers, ASCII diagrams, Mermaid, or technical docs into clean, **editable** flowcharts — then export as PNG, SVG, PDF, Mermaid, or JSON. No backend, no database, no account required.
+
+A **hybrid AI intelligence layer** classifies your input, extracts intent and structure, validates the graph, repairs structural gaps, and lays it out professionally with ELK.js. A Hugging Face model (or any OpenAI-compatible endpoint) is optional and adds deeper interpretation for ambiguous wording.
 
 ![Support ticket triage sample](public/samples/support-ticket-flow.png)
 
-## Features
+---
 
-- **Screenshot reconstruction** — upload or paste a PNG/JPG/JPEG/WEBP file
-  (drag and drop or `Ctrl+V`) and reconstruct editable nodes and edges. Local
-  OCR plus geometry reading order works without credentials; a vision-language
-  model is used when a token is configured. The screenshot is never used as the
-  exported result.
-- **Any text input** — automatic detection of natural language, ChatGPT
-  responses, numbered steps, ASCII diagrams, Mermaid, technical documentation,
-  agentic workflows, software architecture, and business processes.
-- **Hybrid understanding** — extracts objective, problem, actors, systems,
-  inputs, outputs, outcome, steps, conditions, decisions, branches, loops, and
-  dependencies. Important terms are preserved and inferred steps are marked
-  separately from explicit ones.
-- **Graph intelligence** — topological ordering, cycle detection, reachability,
-  connected components, quality scoring, and bounded structural repair. Intentional
-  loops are preserved.
-- **Semantic shapes** — start/end, process, decision, input/output, document, and
-  connector are chosen from graph role and context, not isolated keywords.
-- **Describe a process** — the local engine builds a starting diagram; with a
-  token, an AI model can produce a more nuanced structure. The AI never computes
-  coordinates.
-- **Full editor** — add, delete, rename, drag, and connect nodes; six shapes;
-  six colors; zoom, pan, fit-to-view, and automatic layout.
-- **ELK layout** — ELK.js is preferred for professional routing, with Dagre as a
-  fallback. Layout directions are top-to-bottom, left-to-right, bottom-to-top,
-  and right-to-left.
-- **Undo / redo** — `Ctrl+Z`, `Ctrl+Shift+Z`, and `Ctrl+Y`, with drag and label
-  edits grouped into single history entries.
-- **Mermaid workspace** — generate Mermaid from the canvas, edit it, preview it,
-  copy/download `.mmd`, or apply it back as nodes.
-- **Graph-aware assistant** — 12 quick actions cover direction, detail, missing
-  steps/dependencies, exception handling, agent architecture, parallel execution,
-  alternatives, simplify, and explain. Every graph edit is staged as a preview
-  with **Apply** and **Discard**; nothing changes until you accept it. With a
-  token, custom instructions and AI explanations are also available.
-- **Visible quality feedback** — the editor shows detected input type, confidence,
-  assumptions, warnings, open questions, and graph-quality notes.
-- **Exports** — PNG, SVG, PDF, Mermaid, and JSON. Exports use only the diagram,
-  never the uploaded screenshot.
-- **Light/dark mode**, responsive layout, keyboard shortcuts, and a clean UI with
-  no placeholder buttons.
+## ✨ Features
 
-## Tech stack
+### Input understanding
+| Feature | What it does |
+|---|---|
+| 🔍 **Auto-detect input type** | Natural language, ChatGPT responses, numbered steps, ASCII diagrams, Mermaid, technical documentation, agentic workflows, software architecture, and business processes — classified with confidence scores |
+| 🖼️ **Screenshot reconstruction** | Upload or paste PNG/JPG/JPEG/WEBP; local OCR + geometry reading order rebuilds editable nodes and edges (vision model optional with a token) |
+| 🤖 **Hybrid understanding** | Extracts objective, problem, actors, systems, inputs, outputs, outcome, steps, conditions, decisions, branches, loops, and dependencies — explicit vs. inferred steps marked separately |
 
-- React 19 + TypeScript + Vite
-- Tailwind CSS
-- React Flow (`@xyflow/react`) for the editor
-- ELK.js (`elkjs`) as the preferred layout engine, with Dagre (`@dagrejs/dagre`)
-  as a fallback
-- Tesseract.js (lazy-loaded) for local OCR
-- Mermaid (lazy-loaded) for Mermaid preview
-- `html-to-image` + `jsPDF` (lazy-loaded) for image/PDF export
-- Lucide React icons
-- Hugging Face Inference Providers through the OpenAI-compatible router, or a
-  configurable OpenAI-compatible base URL
+### Graph intelligence
+| Feature | What it does |
+|---|---|
+| 🧠 **Semantic shapes** | start/end, process, decision, input/output, document, connector — chosen from graph role & context, not isolated keywords |
+| 🔗 **Graph algorithms** | Topological sort, cycle detection, reachability, connected components, quality scoring, bounded structural repair; intentional loops preserved |
+| 📐 **ELK layout** | ELK.js preferred (TB, LR, BT, RL), Dagre fallback — the LLM never computes coordinates |
+| ✅ **Validate & repair** | Unreachable nodes, dead ends, duplicates, missing Yes/No labels — bounded, safe fixes only; never invents business steps |
 
-## Run locally
+### Editor & assistant
+| Feature | What it does |
+|---|---|
+| 🎨 **Full editor** | Add, delete, rename, drag, connect nodes; 6 shapes × 6 colors; zoom, pan, fit-to-view; undo/redo |
+| 💬 **Graph-aware assistant** | 12 quick actions: direction, detail, missing steps/dependencies, exception handling, agent architecture, parallel execution, alternatives, simplify, explain |
+| 👀 **Preview before apply** | Every edit staged with **Apply / Discard** — nothing changes until you accept |
+| 📊 **Quality feedback** | Detected input type, confidence, assumptions, warnings, open questions, graph-quality score |
+| 📤 **Exports** | PNG, SVG, PDF, Mermaid, JSON — exports use only the diagram, never the uploaded screenshot |
+| 🌗 **Theme** | Light/dark mode, responsive, keyboard shortcuts |
 
-Requirements: Node.js 20+ and npm.
+---
+
+## 🚀 Live Demo
+
+| Platform | Link |
+|---|---|
+| Hugging Face Spaces | <https://mithun-2714-chatgpt-flowcharts-generator.static.hf.space> |
+
+No sign-up needed. Works offline after the page loads.
+
+---
+
+## 🛠️ Tech stack
+
+| Layer | Tech |
+|---|---|
+| Framework | React 19 + TypeScript + Vite |
+| Styling | Tailwind CSS |
+| Editor | React Flow (`@xyflow/react`) |
+| Layout | ELK.js (`elkjs`) preferred, Dagre (`@dagrejs/dagre`) fallback |
+| OCR | Tesseract.js (lazy-loaded) |
+| Diagrams | Mermaid (lazy-loaded) |
+| Export | `html-to-image` + `jsPDF` (lazy-loaded) |
+| Icons | Lucide React |
+| AI | Hugging Face Inference Providers, or any OpenAI-compatible endpoint |
+
+---
+
+## 💻 Run locally
 
 ```bash
+# 1. Clone
+git clone https://github.com/mithun-27/chatgpt-s_flowcharts_generator.git
+cd chatgpt-s_flowcharts_generator
+
+# 2. Install
 npm install
-npm run dev
+
+# 3. Develop
+npm run dev        # http://localhost:5173
+
+# 4. Production build
+npm run build      # type-check + build into dist/
+npm run preview    # serve production build locally
 ```
 
-Open the URL printed by Vite (usually `http://localhost:5173`).
+Requires **Node.js 20+** and npm. Works fully in demo mode — no token needed.
 
-```bash
-npm run build    # type-check + production build into dist/
-npm run preview  # serve the production build locally
-```
+---
 
-## Demo mode vs AI mode
+## 🧪 Demo mode vs AI mode
 
-Demo mode is the default and is fully usable:
+| Feature | Demo mode (no token) | With Hugging Face token |
+|---|---|---|
+| Text → diagram | Local intelligence engine | AI structuring + local validation |
+| Screenshot → diagram | Local OCR + geometry | Vision model with OCR hint |
+| Graph validate/repair/layout | ✅ Yes | ✅ Yes |
+| Assistant quick actions | ✅ Local only | Local + custom AI instructions |
+| Editor + exports | ✅ Yes | ✅ Yes |
 
-| Feature | Demo mode | With a Hugging Face token |
-| --- | --- | --- |
-| Start from a sample diagram | Yes | Yes |
-| Workflow text → diagram | Local intelligence engine | AI structuring, with local validation |
-| Description → diagram | Local intelligence engine | AI generation or local engine |
-| Screenshot → diagram | Local OCR + geometry reconstruction | Vision model, with OCR text as a hint |
-| Graph validation, repair, layout | Yes | Yes |
-| AI assistant | Local graph-aware actions | Custom modifications and AI explanations |
-| Editor + exports | Yes | Yes |
+Your token stays in **React state for the current tab only** — never written to `localStorage`, the build, or this repo.
 
-The screenshot workflow works without credentials: local OCR reads the labels and
-geometry reconstructs reading order. A vision model generally handles sketches,
-icons, and low-contrast images better, but it is optional rather than required.
+---
 
-## Optional Hugging Face AI setup
+## 🤖 Optional AI setup
 
-1. Create a Hugging Face account and a **fine-grained access token** with
-   permission to use Inference Providers:
-   <https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained>
-2. Open the app, click **Demo mode** in the header, paste the token, and save.
-3. The token is kept in React state for the current tab only. It is never
-   written to `localStorage`, `sessionStorage`, a cookie, the build output, or
-   this repository. Refreshing or closing the tab clears it.
-4. Inference usage may consume Hugging Face credits depending on your account.
+Get a fine-grained token:  
+<https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained>
 
-Default models:
+Paste it in the app's **Demo mode** header button → save.
 
+### Default models
 - Text/reasoning: `openai/gpt-oss-20b`
 - Vision: `Qwen/Qwen3-VL-30B-A3B-Instruct`
 
-Both are editable under **AI settings → Model settings**. Any chat-completions
-model available through Hugging Face Inference Providers can be used. The app
-calls `https://router.huggingface.co/v1/chat/completions` directly from the
-browser; the router returns browser-friendly CORS headers.
+Both editable under **AI settings → Model settings**. Point the layer at any OpenAI-compatible base URL if preferred.
 
-The AI layer is provider-independent. You can point it at another
-OpenAI-compatible endpoint by setting a base URL and model names in the settings
-dialog. For local development, environment variables provide defaults without
-committing a token:
-
+### Local dev (without committing a token)
 ```bash
 VITE_AI_PROVIDER=huggingface
 VITE_AI_TOKEN=hf_...
-VITE_AI_BASE_URL=          # optional OpenAI-compatible base URL
+VITE_AI_BASE_URL=            # optional OpenAI-compatible base URL
 VITE_TEXT_MODEL=openai/gpt-oss-20b
 VITE_VISION_MODEL=Qwen/Qwen3-VL-30B-A3B-Instruct
 ```
 
-Never commit `.env` files or tokens. The app itself keeps a pasted token in
-memory only.
+> ⚠️ Never commit `.env` files or tokens.
 
-If a request fails, the UI explains common statuses (401 token, 402/403 credits
-or permissions, 404 unavailable model, 429 rate limit, 5xx provider outage) and
-suggests demo mode. Transient 408/425/429/5xx responses are retried up to three
-times with backoff.
+---
 
-## Deploy as a Hugging Face Static Space
+## 📊 How the hybrid pipeline works
 
-This project intentionally has no Dockerfile, backend, auth, or database. A
-static Space only needs the built files at its repository root.
+1. **Classify** — multi-signal input detection (natural language, ChatGPT, numbered steps, ASCII, Mermaid, screenshot/OCR, technical doc, agent workflow, architecture, business process). Highest signal score wins; confidence shown.
+2. **Understand** — deterministic narrative parsing: objective, actors, systems, I/O, conditions, yes/no branches, loops, parallel markers, explicit vs. inferred steps.
+3. **Normalize & refine** — shapes from graph role/context, not keywords. Payment checks, eligibility branches, retries, merges handled distinctly.
+4. **Validate & repair** — topological order, cycles, reachability, components, unlabeled branches, dead ends. Bounded structural fixes only.
+5. **Lay out** — ELK.js (Dagre fallback), then surface assumptions, warnings, questions, and quality score beside the canvas.
 
-### Option A — upload the build manually
+---
+
+## 📈 Evaluation
+
+`npm run test:eval` runs a **10-category reference corpus** and reports measurable metrics instead of relying on "looks right" screenshots.
+
+| Metric | Result |
+|---|---|
+| Cases | 10/10 (100%) pass |
+| Classification (top-1) | 100% |
+| Node recall | 98% |
+| Node precision | 99% (reference-based) |
+| Decision recall | 100% |
+| Branch-label recall | 100% |
+| Relationship recall | 100% |
+| Cycle accuracy | 100% |
+| Avg graph quality | 100% |
+
+These numbers are measured against the small reference corpus in `scripts/evalCorpus.ts` — they are **not** a claim of universal 100% accuracy on arbitrary text, and AI-mode output is not covered by this deterministic run.
+
+---
+
+## 📁 Project structure
+
+```
+src/
+  components/   Header, input tabs, editor, toolbar, dialogs, assistant
+  editor/       ELK layout + Dagre fallback, node theme, undo/redo reducer
+  intelligence/ classification, NLP, understanding, shapes, graph engine,
+                assistant edits, pipeline
+  services/     Hugging Face client, AI/vision calls, OCR reconstruction,
+                exporters, Mermaid preview
+  types/        Diagram and AI settings types
+  utils/        Diagram model, local parsers, Mermaid parser/generator, files
+public/samples/ Sample screenshot used by the no-token demo
+scripts/        Sample generator, parser tests, 10-category evaluation corpus
+```
+
+---
+
+## ⌨️ Keyboard shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+Z` / `Cmd+Z` | Undo |
+| `Ctrl+Shift+Z` / `Cmd+Y` | Redo |
+| `Delete` / `Backspace` | Delete selected nodes & edges |
+| `Ctrl+V` | Paste an image (Upload tab) |
+| Double-click a node | Rename it |
+| `Enter` / `Escape` while renaming | Save / cancel label |
+
+---
+
+## ⚠️ Limitations
+
+- The local engine is deterministic & heuristic — ambiguous prose or unusual domain vocabulary may need AI mode or manual editing. Evaluation numbers are reference-based, not universal accuracy.
+- Local OCR depends on image quality & browser OCR support. Hand-drawn diagrams may need corrections; a vision model is optional.
+- Live AI/vision calls require a token. Without one, the app falls back to the local engine.
+- Mermaid support covers nodes, shapes, chained edges, and edge labels. Unsupported types are rejected rather than rendered incorrectly.
+- Export fidelity is best in Chromium-based browsers (DOM-to-image conversion).
+
+---
+
+## 🔒 Privacy
+
+- No analytics, cookies, tracking scripts, or backend storage.
+- Screenshots & prompts go to Hugging Face **only** when you explicitly run an AI action with a token.
+- Token lives in memory for the current tab only.
+- Theme preference is the only value saved in `localStorage`.
+
+---
+
+## 📦 Deploy as Hugging Face Static Space
+
+This project has **no Dockerfile, backend, auth, or database**.
 
 ```bash
 npm install
@@ -170,162 +232,21 @@ npm run build
 ```
 
 1. Create a new **Static** Space on Hugging Face.
-2. Copy the **contents** of `dist/` (not the folder itself) into a clone of the
-   Space repository.
-3. Add a Space `README.md` whose front matter includes `sdk: static` (the YAML
-   block at the top of this file is a valid starting point).
-4. Commit and push the Space repository. Hugging Face serves `index.html` from
-   the repository root.
+2. Copy the **contents** of `dist/` (not the folder) into a clone of the Space repo.
+3. Add a Space `README.md` with `sdk: static` front matter (this file's YAML block is a valid starting point).
+4. Commit & push. HF serves `index.html` from the repo root.
 
-`vite.config.ts` sets `base: './'`, so the app also works when the Space is
-served from a sub-path.
+`vite.config.ts` sets `base: './'`, so it works from a sub-path too.
 
-### Option B — push the full project to GitHub first
+> Don't commit tokens or `.env` files.
 
-Keep this repository as the source of truth, then publish a build to the Space:
+---
 
-```bash
-npm run build
-cd dist
-git init
-git add .
-git commit -m "Deploy static build"
-git branch -M main
-git remote add space https://huggingface.co/spaces/<username>/<space-name>
-git push space main
-```
-
-Remember to include a `README.md` with the `sdk: static` metadata in the Space
-repository. Do not commit a Hugging Face token or any `.env` file.
-
-The GitHub source repository for this project is:
-<https://github.com/mithun-27/chatgpt-s_flowcharts_generator>
-
-## How screenshot reconstruction works
-
-1. The image is validated (type and 10 MB limit), read in the browser, and
-   downscaled to a maximum dimension before processing.
-2. **Without a token**, Tesseract.js runs OCR locally in the browser. Word boxes
-   are grouped into lines, a geometry pass infers reading order and possible
-   connections, and the same hybrid intelligence pipeline rebuilds the graph.
-   This needs network access the first time to download the OCR worker/language
-   data; the image itself never leaves the browser.
-3. **With a token**, a vision model receives a strict prompt that asks for JSON
-   containing labels, shapes, colors, and directed edges — no coordinates. OCR
-   text is passed in as a hint so the model does not have to re-read small labels.
-4. The response is parsed defensively: invalid shapes/colors fall back to safe
-   defaults, labels are cleaned, ids are remapped, duplicate/self edges are
-   dropped, and node/edge counts are capped.
-5. ELK lays out the result (Dagre fallback). React Flow renders new, fully
-   editable nodes and edges. The source image is discarded and is never exported.
-
-## How the hybrid pipeline works
-
-1. **Classify** the input across natural language, ChatGPT response, numbered
-   steps, ASCII, Mermaid, screenshot/OCR, technical documentation, agent
-   workflow, architecture, and business process. Each signal votes; the highest
-   score wins and the confidence is shown.
-2. **Understand** the narrative deterministically: objective, actors, systems,
-   inputs/outputs, conditions, yes/no branches, loops, parallel markers, and
-   explicit versus inferred steps. If a token is configured, the AI layer can
-   produce the semantic graph first.
-3. **Normalize and refine** labels and shapes from graph role rather than
-   isolated keywords. Payment checks, eligibility branches, retries, and merges
-   are treated differently from ordinary process steps.
-4. **Validate and repair** the directed graph: topological order, cycles,
-   reachability, components, unlabeled branches, dead ends. Repairs are bounded
-   and structural; the engine never invents business steps.
-5. **Lay out** with ELK.js, then show assumptions, warnings, open questions, and
-   a quality report next to the editable canvas.
-
-## Evaluation
-
-`npm run test:eval` runs a 10-category reference corpus and reports measurable
-metrics instead of relying on screenshots that “look right”:
-
-- Natural language, ChatGPT response, ASCII, screenshot/OCR text, Mermaid,
-  numbered steps, technical documentation, agent workflow, software architecture,
-  and business process.
-- Node recall/precision, decision recall, branch-label recall, relationship
-  recall, cycle accuracy, and average graph quality, using one-to-one semantic
-  label matching on the local deterministic engine.
-
-Current local result:
-
-```text
-cases                10
-pass rate            10/10 (100%)
-classification       100% (top-1)
-node recall          98%
-node precision       99% (reference-based)
-decision recall      100%
-branch-label recall  100%
-relationship recall  100%
-cycle accuracy       100%
-avg graph quality    100%
-```
-
-These numbers are measured against the small reference corpus in
-`scripts/evalCorpus.ts`. They are **not** a claim of universal 100% accuracy on
-arbitrary text, and AI-mode output is not covered by this deterministic run.
-
-## Project structure
-
-```text
-src/
-  components/       Header, input tabs, editor, toolbar, dialogs, assistant
-  editor/           ELK layout + Dagre fallback, node theme, undo/redo reducer
-  intelligence/     classification, NLP, understanding, shapes, graph engine,
-                    assistant edits, pipeline
-  services/         Hugging Face client, AI/vision calls, OCR reconstruction,
-                    exporters, Mermaid preview
-  types/            Diagram and AI settings types
-  utils/            Diagram model, local parsers, Mermaid parser/generator, files
-public/samples/     Sample screenshot used by the no-token demo
-scripts/            Sample generator, parser tests, 10-category evaluation corpus
-```
-
-## Keyboard shortcuts
-
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl+Z` / `Cmd+Z` | Undo |
-| `Ctrl+Shift+Z` / `Ctrl+Y` | Redo |
-| `Delete` / `Backspace` | Delete selected nodes and edges |
-| `Ctrl+V` | Paste an image while the Upload tab is active |
-| Double-click a node | Rename it |
-| `Enter` / `Escape` while renaming | Save / cancel the label |
-
-## Limitations
-
-- The local engine is deterministic and heuristic. It handles the reference
-  corpus well, but ambiguous prose, unusual domain vocabulary, and implicit
-  business rules can still need AI mode or manual editing. The evaluation numbers
-  above are reference-based, not a universal accuracy claim.
-- Local screenshot OCR depends on image quality and browser OCR support. The OCR
-  worker/language data is fetched on first use, so it needs network access once;
-  hand-drawn diagrams may need manual corrections. A vision model is optional and
-  is not exercised by the local evaluation.
-- Live AI and vision calls require a token and are not part of `npm run test:eval`.
-  Without a token the app clearly falls back to the local engine rather than
-  failing silently.
-- The app supports a practical Mermaid flowchart subset (nodes, shapes, chained
-  edges, and edge labels). Unsupported Mermaid diagram types are rejected with
-  an error instead of being rendered incorrectly.
-- Mermaid has no native document shape, so document nodes use flag notation when
-  exported and are mapped back to the document shape when the app re-imports
-  its own output.
-- Export fidelity is best in Chromium-based browsers because PNG/SVG/PDF export
-  uses DOM-to-image conversion.
-
-## Privacy
-
-- No analytics, cookies, tracking scripts, or backend storage.
-- Uploaded screenshots and prompts are sent directly to Hugging Face only when
-  you explicitly run an AI action with a token.
-- The token exists in memory for the current tab only.
-- Theme preference is the only value saved in `localStorage`.
-
-## License
+## 📄 License
 
 MIT — free to use for learning and portfolio projects.
+
+<p align="center">
+  <a href="https://github.com/mithun-27/chatgpt-s_flowcharts_generator">Source</a> · 
+  <a href="https://mithun-2714-chatgpt-flowcharts-generator.static.hf.space/">Live Demo</a>
+</p>
