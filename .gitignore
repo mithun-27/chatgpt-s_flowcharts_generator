@@ -11,3 +11,4 @@ dist-ssr
 .idea
 *.tsbuildinfo
 scripts/.parserAssert.mjs
+scripts/.evalIntelligence.mjs

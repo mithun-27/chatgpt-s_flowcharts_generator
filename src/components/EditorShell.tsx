@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { AlertTriangle, Brain, HelpCircle } from 'lucide-react';
 import {
   ReactFlowProvider,
   applyEdgeChanges,
@@ -327,7 +328,14 @@ function EditorShellInner({
               connections
             </span>
             <span className="hidden sm:inline">
-              {diagram.direction === 'LR' ? 'Horizontal' : 'Vertical'} layout
+              {diagram.direction === 'LR'
+                ? 'Left to right'
+                : diagram.direction === 'BT'
+                  ? 'Bottom to top'
+                  : diagram.direction === 'RL'
+                    ? 'Right to left'
+                    : 'Top to bottom'}{' '}
+              layout
             </span>
             {selectionCount > 0 && (
               <span className="rounded bg-blue-100 px-1.5 py-0.5 font-medium text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
@@ -339,6 +347,55 @@ function EditorShellInner({
             Drag handles to connect · Double-click a node to rename · Delete removes selection
           </span>
         </div>
+
+        {diagram.analysis && (
+          <div className="border-t border-slate-200 bg-slate-50/80 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
+                <Brain size={12} className="text-violet-500" />
+                Understanding
+              </span>
+              {diagram.analysis.category && <span>{diagram.analysis.category}</span>}
+              <span className="text-slate-400">
+                input: {diagram.analysis.inputKind} ·{' '}
+                {Math.round(diagram.analysis.inputConfidence * 100)}%
+              </span>
+              {diagram.analysis.quality && (
+                <span
+                  className={
+                    diagram.analysis.quality.score >= 80
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-amber-600 dark:text-amber-400'
+                  }
+                >
+                  quality {Math.round(diagram.analysis.quality.score)}%
+                  {diagram.analysis.quality.cyclic ? ' · loop preserved' : ''}
+                </span>
+              )}
+              <span className="text-slate-400">engine: {diagram.analysis.engine}</span>
+            </div>
+            {diagram.analysis.objective && (
+              <p className="mt-1 line-clamp-2">
+                <span className="font-medium text-slate-700 dark:text-slate-200">
+                  Objective:
+                </span>{' '}
+                {diagram.analysis.objective}
+              </p>
+            )}
+            {diagram.analysis.warnings.length > 0 && (
+              <p className="mt-1 flex items-start gap-1 text-amber-700 dark:text-amber-300">
+                <AlertTriangle size={11} className="mt-0.5 shrink-0" />
+                <span>{diagram.analysis.warnings.slice(0, 2).join(' ')}</span>
+              </p>
+            )}
+            {diagram.analysis.questions.length > 0 && (
+              <p className="mt-1 flex items-start gap-1 text-slate-500 dark:text-slate-400">
+                <HelpCircle size={11} className="mt-0.5 shrink-0" />
+                <span>{diagram.analysis.questions.slice(0, 2).join(' ')}</span>
+              </p>
+            )}
+          </div>
+        )}
 
         <AssistantPanel
           diagram={diagram}

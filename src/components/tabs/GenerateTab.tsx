@@ -8,11 +8,13 @@ import {
 } from 'lucide-react';
 import type { FlowDiagram } from '../../types/diagram';
 import type { HfSettings } from '../../types/hf';
-import { normalizeAiDiagram } from '../../utils/diagram';
 import { shortError } from '../../utils/json';
 import { getSampleDiagram, SAMPLE_PROMPTS } from '../../utils/samples';
-import { descriptionToDiagram } from '../../utils/textToFlow';
 import { generateDiagramFromPrompt } from '../../services/aiText';
+import {
+  buildIntelligenceFromAi,
+  buildLocalIntelligence,
+} from '../../intelligence/pipeline';
 import type { ToastKind } from '../Toast';
 
 interface GenerateTabProps {
@@ -32,13 +34,14 @@ export default function GenerateTab({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const runLocal = () => {
+  const runLocal = async () => {
     setError('');
     try {
-      const diagram = descriptionToDiagram(prompt);
+      const result = await buildLocalIntelligence(prompt);
       onLoadDiagram(
-        diagram,
-        `Generated ${diagram.nodes.length} editable nodes with the local demo generator.`,
+        result.diagram,
+        result.analysis.warnings[0] ??
+          `Understood ${result.diagram.nodes.length} steps and ${result.diagram.edges.length} relationships with the local engine.`,
       );
     } catch (localError) {
       const message = shortError(localError);
@@ -49,7 +52,7 @@ export default function GenerateTab({
 
   const runAi = async () => {
     if (!settings.token) {
-      onToast('Add a Hugging Face token to use AI generation, or try the demo generator.', 'info');
+      onToast('Add an AI provider token to use AI generation, or use the local engine.', 'info');
       onOpenSettings();
       return;
     }
@@ -58,10 +61,14 @@ export default function GenerateTab({
     setBusy(true);
     try {
       const result = await generateDiagramFromPrompt(settings, prompt);
-      const { diagram, warnings } = normalizeAiDiagram(result);
+      const finalized = await buildIntelligenceFromAi(result, {
+        sourceText: prompt,
+        engine: settings.provider === 'huggingface' ? 'hf' : 'openai-compatible',
+      });
       onLoadDiagram(
-        diagram,
-        warnings[0] ?? `AI generated ${diagram.nodes.length} editable nodes.`,
+        finalized.diagram,
+        finalized.analysis.warnings[0] ??
+          `AI generated ${finalized.diagram.nodes.length} validated nodes.`,
       );
     } catch (aiError) {
       const message = shortError(aiError);
@@ -124,8 +131,9 @@ export default function GenerateTab({
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           <Sparkles size={14} className="mt-0.5 shrink-0" />
           <p>
-            No token? The local demo generator turns your description into an
-            editable starting diagram. AI generation produces more nuanced results.
+            No token? The local reasoning engine still detects decisions, branches,
+            merges and loops, then validates and lays out the graph. An AI model adds
+            deeper interpretation for ambiguous wording.
           </p>
         </div>
       )}
@@ -146,16 +154,16 @@ export default function GenerateTab({
             ? 'Generating flowchart…'
             : settings.token
               ? 'Generate with AI'
-              : 'Generate demo flowchart'}
+              : 'Generate with local engine'}
         </button>
         {settings.token && (
           <button
             type="button"
-            onClick={runLocal}
+            onClick={() => void runLocal()}
             disabled={!prompt.trim() || busy}
             className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            Try demo generator
+            Try local engine
           </button>
         )}
       </div>

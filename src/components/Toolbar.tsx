@@ -1,7 +1,9 @@
 import type { RefObject } from 'react';
 import {
   ArrowDown,
+  ArrowLeft,
   ArrowRight,
+  ArrowUp,
   Code2,
   Maximize2,
   Plus,
@@ -176,6 +178,20 @@ export default function Toolbar({
         active={diagram.direction === 'LR'}
       >
         <ArrowRight size={15} />
+      </IconButton>
+      <IconButton
+        label="Bottom to top layout"
+        onClick={() => onSetDirection('BT')}
+        active={diagram.direction === 'BT'}
+      >
+        <ArrowUp size={15} />
+      </IconButton>
+      <IconButton
+        label="Right to left layout"
+        onClick={() => onSetDirection('RL')}
+        active={diagram.direction === 'RL'}
+      >
+        <ArrowLeft size={15} />
       </IconButton>
       <button
         type="button"

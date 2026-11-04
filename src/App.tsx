@@ -131,9 +131,9 @@ export default function App() {
 
         <footer className="flex flex-col items-center justify-between gap-2 pb-4 pt-1 text-[11px] text-slate-400 sm:flex-row dark:text-slate-500">
           <p className="inline-flex items-center gap-1.5">
-            Built with React, React Flow, Dagre, and Mermaid
+            Built with React, React Flow, ELK, and Mermaid
             <Sparkles size={11} className="text-violet-400" />
-            Optional Hugging Face AI
+            Local OCR · optional Hugging Face AI
           </p>
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1">

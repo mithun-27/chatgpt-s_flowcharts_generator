@@ -14,11 +14,12 @@ export function layoutDiagram(
     return { ...diagram, direction };
   }
 
+  const horizontal = direction === 'LR' || direction === 'RL';
   const graph = new dagre.graphlib.Graph();
   graph.setGraph({
     rankdir: direction,
-    nodesep: direction === 'LR' ? 56 : 64,
-    ranksep: direction === 'LR' ? 86 : 74,
+    nodesep: horizontal ? 56 : 64,
+    ranksep: horizontal ? 86 : 74,
     marginx: 32,
     marginy: 32,
   });

@@ -22,6 +22,11 @@ import {
   SUPPORT_TICKET_SAMPLE,
 } from '../../utils/samples';
 import { extractDiagramFromImage } from '../../services/vision';
+import { reconstructFromScreenshot } from '../../services/ocrVision';
+import {
+  buildIntelligenceFromAi,
+  buildIntelligenceFromUnderstanding,
+} from '../../intelligence/pipeline';
 import type { ToastKind } from '../Toast';
 
 interface UploadTabProps {
@@ -38,12 +43,6 @@ interface SelectedImage {
   isSample: boolean;
 }
 
-function wait(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, milliseconds);
-  });
-}
-
 export default function UploadTab({
   settings,
   onLoadDiagram,
@@ -54,6 +53,8 @@ export default function UploadTab({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
+  const [progress, setProgress] = useState('');
+  const [ocrPreview, setOcrPreview] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
 
@@ -106,28 +107,10 @@ export default function UploadTab({
   const analyze = async () => {
     if (!image || busy) return;
     setError('');
-
-    if (!settings.token) {
-      if (image.isSample) {
-        setBusy(true);
-        await wait(700);
-        const { diagram } = normalizeAiDiagram(SUPPORT_TICKET_SAMPLE);
-        onLoadDiagram(
-          diagram,
-          'Demo extraction loaded. Add a Hugging Face token to analyze your own screenshots.',
-        );
-        setBusy(false);
-        return;
-      }
-      onToast(
-        'Screenshot understanding needs a Hugging Face token. Try the sample screenshot or use the other input tabs.',
-        'info',
-      );
-      onOpenSettings();
-      return;
-    }
-
+    setOcrPreview('');
     setBusy(true);
+    setProgress('Preparing the screenshot…');
+
     try {
       let source = image.dataUrl;
       if (image.isSample) {
@@ -139,20 +122,85 @@ export default function UploadTab({
         );
       }
 
-      const prepared = await downscaleDataUrl(source);
-      const result = await extractDiagramFromImage(settings, prepared.dataUrl);
-      const { diagram, warnings } = normalizeAiDiagram(result);
+      // Local OCR + geometry runs without a token and is also a hint for the VLM.
+      let ocr;
+      let ocrError = '';
+      try {
+        ocr = await reconstructFromScreenshot(source, {
+          onProgress: (message, fraction) =>
+            setProgress(`${message} ${Math.round(Math.min(1, fraction) * 100)}%`),
+        });
+        setOcrPreview(ocr.text.slice(0, 1600));
+      } catch (localError) {
+        ocrError = shortError(localError);
+      }
+
+      if (settings.token) {
+        try {
+          setProgress('Asking the vision model to recover shapes and arrows…');
+          const prepared = await downscaleDataUrl(source);
+          const result = await extractDiagramFromImage(
+            settings,
+            prepared.dataUrl,
+            undefined,
+            ocr?.text,
+          );
+          const finalized = await buildIntelligenceFromAi(result, {
+            sourceText: ocr?.text ?? image.name,
+            engine: settings.provider === 'huggingface' ? 'hf' : 'openai-compatible',
+            inputKind: 'screenshot',
+            warnings: ocr?.warnings ?? [],
+          });
+          onLoadDiagram(
+            finalized.diagram,
+            finalized.analysis.warnings[0] ??
+              `Reconstructed ${finalized.diagram.nodes.length} editable nodes from the screenshot.`,
+          );
+          return;
+        } catch (visionError) {
+          if (!ocr) {
+            throw new Error(
+              `${shortError(visionError)} Local OCR also failed: ${ocrError}`,
+            );
+          }
+          onToast('The vision model was unavailable, so the local OCR reconstruction was used.', 'info');
+        }
+      }
+
+      if (!ocr) {
+        if (image.isSample) {
+          const { diagram } = normalizeAiDiagram(SUPPORT_TICKET_SAMPLE);
+          onLoadDiagram(diagram, 'Loaded the built-in reconstruction demo.');
+          return;
+        }
+        throw new Error(ocrError || 'OCR could not read that screenshot.');
+      }
+
+      setProgress('Validating and laying out the reconstructed graph…');
+      const finalized = await buildIntelligenceFromUnderstanding(ocr.understanding, ocr.text, {
+        inputKind: 'screenshot',
+        warnings: ocr.warnings,
+        assumptions: [
+          'Reconstructed locally with OCR and on-page geometry; no cloud vision model was used.',
+        ],
+        notes: [
+          `OCR read ${ocr.lines.length} text line${ocr.lines.length === 1 ? '' : 's'}.`,
+        ],
+      });
       onLoadDiagram(
-        diagram,
-        warnings[0] ??
-          `Reconstructed ${diagram.nodes.length} editable nodes from the screenshot.`,
+        finalized.diagram,
+        `Reconstructed ${finalized.diagram.nodes.length} editable nodes locally from OCR text and geometry.`,
       );
+      if (ocr.warnings.length > 0) {
+        onToast(ocr.warnings[0], 'info');
+      }
     } catch (analyzeError) {
       const message = shortError(analyzeError);
       setError(message);
       onToast(message, 'error');
     } finally {
       setBusy(false);
+      setProgress('');
     }
   };
 
@@ -161,10 +209,20 @@ export default function UploadTab({
       {!settings.token && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           <Sparkles size={15} className="mt-0.5 shrink-0" />
-          <p>
-            Vision AI is optional. The sample screenshot still works as a
-            reconstruction demo; your own uploads need a Hugging Face token.
-          </p>
+          <div>
+            <p>
+              Local OCR + geometry reconstruction works without a token. It reads the
+              text and reading order; a vision model is optional and recovers complex
+              arrows and shapes more reliably.
+            </p>
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="mt-1 text-[11px] font-semibold underline underline-offset-2"
+            >
+              Add a vision model
+            </button>
+          </div>
         </div>
       )}
 
@@ -293,6 +351,24 @@ export default function UploadTab({
           </button>
         )}
       </div>
+
+      {busy && progress && (
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50/70 px-3 py-2 text-xs text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+          <Loader2 size={14} className="animate-spin" />
+          <span>{progress}</span>
+        </div>
+      )}
+
+      {ocrPreview && (
+        <details className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+          <summary className="cursor-pointer font-medium">
+            OCR text used for reconstruction
+          </summary>
+          <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[10px] leading-relaxed">
+            {ocrPreview}
+          </pre>
+        </details>
+      )}
 
       {error && (
         <div className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs leading-relaxed text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">

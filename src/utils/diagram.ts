@@ -3,6 +3,7 @@ import type {
   AiDiagram,
   AiEdge,
   AiNode,
+  DiagramAnalysis,
   FlowDiagram,
   FlowEdge,
   FlowNode,
@@ -10,9 +11,11 @@ import type {
   NodeColor,
   NodeShape,
   NormalizedDiagram,
+  Provenance,
 } from '../types/diagram';
 import { layoutDiagram } from '../editor/layout';
 import { defaultColorForShape } from '../editor/nodeTheme';
+import { normalizeDirection } from './flowHeuristics';
 
 const SHAPES: NodeShape[] = [
   'startEnd',
@@ -121,6 +124,18 @@ export function normalizeAiDiagram(
     if (!rawNode || typeof rawNode !== 'object') return;
     const shape = normalizeShape(rawNode.shape);
     const label = cleanLabel(rawNode.label, `Step ${index + 1}`);
+    const provenance: Provenance | undefined =
+      rawNode.provenance === 'explicit' || rawNode.provenance === 'inferred'
+        ? rawNode.provenance
+        : undefined;
+    const confidence =
+      typeof rawNode.confidence === 'number' && Number.isFinite(rawNode.confidence)
+        ? Math.min(1, Math.max(0, rawNode.confidence))
+        : undefined;
+    const rationale =
+      typeof rawNode.rationale === 'string' && rawNode.rationale.trim()
+        ? cleanLabel(rawNode.rationale, '').replace(/\n+/g, ' ')
+        : undefined;
     const node: FlowNode = {
       id: `n${index + 1}`,
       type: 'flow',
@@ -129,6 +144,9 @@ export function normalizeAiDiagram(
         label,
         shape,
         color: normalizeColor(rawNode.color, shape),
+        ...(confidence !== undefined ? { confidence } : {}),
+        ...(provenance ? { provenance } : {}),
+        ...(rationale ? { rationale } : {}),
       },
     };
     nodes.push(node);
@@ -169,9 +187,13 @@ export function normalizeAiDiagram(
     });
   });
 
-  const direction: LayoutDirection = input.direction === 'LR' ? 'LR' : fallbackDirection;
+  const direction = normalizeDirection(input.direction ?? fallbackDirection);
   const title =
     typeof input.title === 'string' ? cleanLabel(input.title, '').replace(/\n+/g, ' ') : '';
+  const analysis =
+    input.analysis && typeof input.analysis === 'object'
+      ? (input.analysis as DiagramAnalysis)
+      : undefined;
   const diagram = layoutDiagram(
     {
       version: 1,
@@ -179,6 +201,7 @@ export function normalizeAiDiagram(
       direction,
       nodes,
       edges,
+      ...(analysis ? { analysis } : {}),
     },
     direction,
   );
@@ -199,6 +222,9 @@ export function cleanDiagram(diagram: FlowDiagram): FlowDiagram {
         label: node.data.label,
         shape: node.data.shape,
         color: node.data.color,
+        ...(node.data.confidence !== undefined ? { confidence: node.data.confidence } : {}),
+        ...(node.data.provenance ? { provenance: node.data.provenance } : {}),
+        ...(node.data.rationale ? { rationale: node.data.rationale } : {}),
       },
     })),
     edges: diagram.edges.map((edge: Edge) => ({
@@ -208,6 +234,7 @@ export function cleanDiagram(diagram: FlowDiagram): FlowDiagram {
       type: 'flow',
       ...(edge.label ? { label: String(edge.label) } : {}),
     })),
+    ...(diagram.analysis ? { analysis: diagram.analysis } : {}),
   };
 }
 
@@ -243,10 +270,17 @@ export function diagramToSummary(diagram: FlowDiagram): string {
     (node) => (incoming.get(node.id) ?? 0) === 0 && (outgoing.get(node.id) ?? 0) === 0,
   );
 
+  const directionText: Record<LayoutDirection, string> = {
+    TB: 'top to bottom',
+    LR: 'left to right',
+    BT: 'bottom to top',
+    RL: 'right to left',
+  };
+
   const lines = [
     `This flowchart contains ${nodes.length} node${nodes.length === 1 ? '' : 's'} and ${edges.length} connection${edges.length === 1 ? '' : 's'}.`,
     start ? `It begins at “${start.data.label}”.` : 'It does not have an explicit start node.',
-    `The flow moves ${diagram.direction === 'LR' ? 'left to right' : 'top to bottom'}.`,
+    `The flow moves ${directionText[diagram.direction]}.`,
   ];
 
   if (decisions.length > 0) {

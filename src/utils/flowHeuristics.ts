@@ -192,5 +192,5 @@ export function extractTitle(value: string): TitleExtraction {
 }
 
 export function normalizeDirection(value: unknown): LayoutDirection {
-  return value === 'LR' ? 'LR' : 'TB';
+  return value === 'LR' || value === 'BT' || value === 'RL' ? value : 'TB';
 }
