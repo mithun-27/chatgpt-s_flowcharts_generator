@@ -205,6 +205,8 @@ function finalize(
   };
 
   // The quality report is filled after layout so it reflects the final graph.
+  // Quality is scored 0-100 by graphEngine (deductions for unreachable nodes,
+  // duplicates, unlabeled branches, disconnected components, missing entries/exits).
   const withAnalysis: FlowDiagram = { ...repaired.diagram, analysis };
   const warnings = analysis.warnings;
 
