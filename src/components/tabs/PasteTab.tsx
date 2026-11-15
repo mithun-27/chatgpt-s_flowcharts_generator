@@ -431,7 +431,7 @@ export default function PasteTab({
         )}
 
         <span className="text-[11px] text-slate-400 dark:text-slate-500">
-          Layout: {direction} · validated and editable after generation
+          Layout: {direction} · editable after generation
         </span>
       </div>
 

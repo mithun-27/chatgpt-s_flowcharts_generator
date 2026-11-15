@@ -345,8 +345,7 @@ function EditorShellInner({
           </div>
           <span className="hidden md:inline">
             Drag handles to connect · Double-click a node to rename · Delete removes selection
-          </span>
-        </div>
+          </span>        </div>
 
         {diagram.analysis && (
           <div className="border-t border-slate-200 bg-slate-50/80 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
