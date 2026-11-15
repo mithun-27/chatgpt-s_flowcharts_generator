@@ -895,6 +895,8 @@ export function understandWorkflow(
   }
 
   // Add explicit Start/End terminators when the narrative does not provide them.
+  // These are inferred structural nodes that make the flowchart readable; they
+  // do not represent real workflow steps and are marked with inferred provenance.
   const first = nodes[0];
   if (first && first.shape !== 'startEnd' && first.shape !== 'inputOutput') {
     const startId = 'u-start';
