@@ -66,7 +66,7 @@ const QUICK_ACTIONS = [
   { label: 'Agents', instruction: 'Add an agent architecture.', icon: Bot },
   { label: 'Parallel', instruction: 'Add parallel execution.', icon: GitBranch },
   { label: 'Alternatives', instruction: 'Add an alternative path.', icon: GitBranch },
-  { label: 'Simplify', instruction: 'Simplify this workflow.', icon: Scissors },
+  { label: 'Simplify', instruction: 'Simplify this workflow graph.', icon: Scissors },
   { label: 'Explain', instruction: 'Explain this flowchart step by step.', icon: MessageSquareText },
 ];
 
