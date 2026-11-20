@@ -385,8 +385,8 @@ export default function PasteTab({
           <p>
             The local engine detects intent, decisions, branches, merges and loops,
             then validates the graph before ELK lays it out — no account or API key
-            required. Add a token only when the wording is too ambiguous for
-            deterministic reasoning.
+            required. Add a token only when wording is too ambiguous for
+            local reasoning.
           </p>
         </div>
       )}
