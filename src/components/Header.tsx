@@ -50,7 +50,7 @@ export default function Header({
                 hasToken ? 'bg-emerald-500' : 'bg-amber-500'
               }`}
             />
-            {hasToken ? 'Connected' : 'Demo'}
+            {hasToken ? 'AI: On' : 'AI: Off'}
             <Settings2 size={13} />
           </button>
 
