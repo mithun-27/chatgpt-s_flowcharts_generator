@@ -212,6 +212,7 @@ export function analyzeGraph(diagram: FlowDiagram): GraphReport {
     warnings.push(`${cycleGroups.length} intentional cycle/feedback loop(s) preserved.`);
   }
 
+  // Graph quality score: starts at 100, deducted for structural issues.
   let score = 100;
   score -= Math.min(24, unreachableNodes.length * 8);
   score -= Math.min(20, duplicateNodes.length * 10);
