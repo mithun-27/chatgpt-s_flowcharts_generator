@@ -264,6 +264,8 @@ export function stepLabel(value: string): string {
 }
 
 export function decisionFromCheck(value: string): string | null {
+  // Converts a "The system checks/validates/verifies X" sentence into a
+  // decision-node label such as "X valid?".
   const cleaned = stripMarkdownInline(value).replace(/[.!]+$/, '').trim();
   const match = cleaned.match(
     /^(?:the\s+\w+\s+)?(?:checks?|validates?|verifies?|assess(?:es)?|evaluates?|screens?|reviews?|qualif(?:y|ies)|determines?|tests?)\s+(.+)$/i,
