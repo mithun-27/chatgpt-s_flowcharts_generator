@@ -197,7 +197,7 @@ export default function Toolbar({
         type="button"
         onClick={() => onSetDirection(diagram.direction)}
         className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-transparent px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-        title="Automatically arrange all nodes"
+        title="Auto-arrange all nodes"
       >
         <Wand2 size={14} />
         <span className="hidden lg:inline">Auto arrange</span>
