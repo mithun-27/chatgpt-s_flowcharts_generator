@@ -378,7 +378,7 @@ export default function UploadTab({
       )}
 
       <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-        The screenshot is never used as the output image. It is analyzed into
+        The screenshot is never exported. It is analyzed into
         nodes and edges, then re-rendered as an editable React Flow diagram.
       </p>
     </div>
