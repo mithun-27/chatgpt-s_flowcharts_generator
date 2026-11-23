@@ -68,6 +68,7 @@ const YES_NO = /^(yes|no|y|n|true|false|if yes|if no)\b\s*[:,-]?\s*(.*)$/i;
 const RETRY_WORDS = /\b(retry|retries|repeat|again|allow retry|try again|reattempt)\b/i;
 
 function isObjectiveSentence(value: string): boolean {
+  // Detects a leading objective sentence like "Build a checkout platform."
   const text = stripMarkdownInline(value).replace(/\s+/g, ' ').trim();
   if (!text || text.length > 220) return false;
   if (!OBJECTIVE_START.test(text) || !OBJECTIVE_NOUN.test(text)) return false;
