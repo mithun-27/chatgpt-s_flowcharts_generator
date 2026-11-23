@@ -43,7 +43,7 @@ export default function Header({
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300'
                 : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300'
             }`}
-            title="Configure AI & settings"
+            title="Open AI settings"
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
