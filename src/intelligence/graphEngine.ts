@@ -168,6 +168,8 @@ function branchLabelFor(node: FlowNode | undefined): string {
 }
 
 export function analyzeGraph(diagram: FlowDiagram): GraphReport {
+  // Computes structural quality metrics: cycles, reachability, components,
+  // entries, exits, duplicates, and unlabeled branches.
   const nodes = diagram.nodes;
   const edges = diagram.edges;
   const adjacency = buildAdjacency(nodes, edges);
