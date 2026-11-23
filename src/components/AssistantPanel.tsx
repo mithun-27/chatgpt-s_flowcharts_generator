@@ -61,7 +61,7 @@ const QUICK_ACTIONS = [
   { label: 'Up', instruction: 'Make this flowchart go bottom to top.', icon: ArrowUp },
   { label: 'Left', instruction: 'Make this flowchart go right to left.', icon: ArrowLeft },
   { label: 'Detail', instruction: 'Add more detail.', icon: Layers },
-  { label: 'Missing steps', instruction: 'Find missing steps and dependencies.', icon: GitMerge },
+  { label: 'Missing steps', instruction: 'Find missing steps and link them.', icon: GitMerge },
   { label: 'Exception', instruction: 'Add exception handling.', icon: ShieldAlert },
   { label: 'Agents', instruction: 'Add an agent architecture.', icon: Bot },
   { label: 'Parallel', instruction: 'Add parallel execution.', icon: GitBranch },
